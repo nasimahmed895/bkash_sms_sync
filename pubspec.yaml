@@ -24,7 +24,7 @@ dependencies:
   another_telephony: ^0.4.1
 
   # Background jobs
-  workmanager: ^0.5.2
+  workmanager: ^0.9.0
 
   # Connectivity monitoring
   connectivity_plus: ^6.0.3

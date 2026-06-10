@@ -44,7 +44,7 @@ class BackgroundTasks {
       AppConstants.periodicSyncTaskName,
       frequency: AppConstants.fallbackRetryInterval,
       constraints: Constraints(networkType: NetworkType.connected),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
     );
   }
 

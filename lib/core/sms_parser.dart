@@ -86,4 +86,42 @@ class BkashSmsParser {
       return null;
     }
   }
+
+  /// Like [parse] but tolerates missing timestamp — falls back to now.
+  /// Use for notification text where the `at` field may be absent.
+  static ParsedBkashPayment? parseNotification(String body) {
+    if (!looksLikeBkashPayment(body)) return null;
+
+    final received = _receivedRe.firstMatch(body);
+    final balance = _balanceRe.firstMatch(body);
+    final trx = _trxRe.firstMatch(body);
+
+    if (received == null || balance == null || trx == null) return null;
+
+    final atMatch = _atRe.firstMatch(body);
+    final at = atMatch != null
+        ? atMatch.group(1)!.replaceAll(RegExp(r'\s+'), ' ')
+        : _nowFormatted();
+
+    try {
+      return ParsedBkashPayment(
+        amount: _toDouble(received.group(1)!),
+        number: received.group(2)!,
+        balance: _toDouble(balance.group(1)!),
+        trxID: trx.group(1)!,
+        at: at,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static String _nowFormatted() {
+    final now = DateTime.now();
+    final d = now.day.toString().padLeft(2, '0');
+    final m = now.month.toString().padLeft(2, '0');
+    final h = now.hour.toString().padLeft(2, '0');
+    final min = now.minute.toString().padLeft(2, '0');
+    return '$d/$m/${now.year} $h:$min';
+  }
 }

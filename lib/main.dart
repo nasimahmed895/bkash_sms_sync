@@ -5,6 +5,7 @@ import 'presentation/screens/dashboard_screen.dart';
 import 'presentation/screens/payment_list_screen.dart';
 import 'services/background_tasks.dart';
 import 'services/connectivity_service.dart';
+import 'services/notification_capture_service.dart';
 import 'services/service_locator.dart';
 import 'services/sms_service.dart';
 
@@ -41,25 +42,43 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _index = 0;
   final _connectivity = ConnectivityService();
+  final _notifService = NotificationCaptureService();
   bool _smsReady = false;
+  bool _notifReady = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _bootstrap();
   }
 
   Future<void> _bootstrap() async {
-    final ok = await SmsService().start(); // permissions + listener
-    if (mounted) setState(() => _smsReady = ok);
-    _connectivity.start(); // instant flush when internet returns
+    final smsOk = await SmsService().start();
+    final notifOk = await _notifService.isAccessGranted();
+    if (notifOk) _notifService.start();
+    if (mounted) setState(() { _smsReady = smsOk; _notifReady = notifOk; });
+    _connectivity.start();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && !_notifReady) {
+      _notifService.isAccessGranted().then((ok) {
+        if (ok && mounted) {
+          _notifService.start();
+          setState(() => _notifReady = true);
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _connectivity.dispose();
     super.dispose();
   }
@@ -78,6 +97,18 @@ class _HomeShellState extends State<HomeShell> {
                 TextButton(
                   onPressed: _bootstrap,
                   child: const Text('Grant'),
+                ),
+              ],
+            ),
+          if (!_notifReady)
+            MaterialBanner(
+              backgroundColor: Colors.orange.shade50,
+              content: const Text(
+                  'Notification access not enabled — enable for dual-capture fallback.'),
+              actions: [
+                TextButton(
+                  onPressed: _notifService.openAccessSettings,
+                  child: const Text('Enable'),
                 ),
               ],
             ),

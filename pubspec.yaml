@@ -1,0 +1,49 @@
+name: bkash_sms_sync
+description: bKash SMS payment verification and webhook sync app.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Networking
+  dio: ^5.4.3
+
+  # Local database (SQLite — no codegen needed)
+  sqflite: ^2.3.3
+  path: ^1.9.0
+
+  # SMS listening (maintained fork of telephony)
+  another_telephony: ^0.4.1
+
+  # Background jobs
+  workmanager: ^0.5.2
+
+  # Connectivity monitoring
+  connectivity_plus: ^6.0.3
+
+  # Dependency injection
+  get_it: ^7.7.0
+
+  # Logging
+  logger: ^2.3.0
+
+  # Utilities
+  intl: ^0.19.0
+  url_launcher: ^6.2.6
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

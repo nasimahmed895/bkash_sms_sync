@@ -3,8 +3,7 @@ class AppConstants {
   AppConstants._();
 
   // ---- API ----
-  /// TODO: set to the real backend origin before release.
-  static const String baseUrl = 'https://api.example.com';
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.hisabeasy.com');
 
   /// Unified payment webhook (handles bKash + Nagad, SMS package +
   /// subscription). Full URL = baseUrl + webhookPath.

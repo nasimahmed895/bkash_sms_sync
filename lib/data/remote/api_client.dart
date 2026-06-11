@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../core/app_logger.dart';
 import '../../core/constants.dart';
@@ -42,8 +46,8 @@ class ApiClient {
               validateStatus: (_) => true,
             )) {
     _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
+      requestBody: kDebugMode,
+      responseBody: kDebugMode,
       logPrint: (o) => appLogger.d(o),
     ));
   }
@@ -51,7 +55,16 @@ class ApiClient {
   /// POST /webhook/verification-payment
   Future<WebhookResult> submitPayment(Map<String, dynamic> body) async {
     try {
-      final res = await _dio.post(AppConstants.webhookPath, data: body);
+      final bodyJson = jsonEncode(body);
+      final secret = const String.fromEnvironment('WEBHOOK_SECRET');
+      final options = Options();
+      if (secret.isNotEmpty) {
+        final sig = Hmac(sha256, utf8.encode(secret))
+            .convert(utf8.encode(bodyJson))
+            .toString();
+        options.headers = {'X-Webhook-Signature': sig};
+      }
+      final res = await _dio.post(AppConstants.webhookPath, data: bodyJson, options: options);
       final data = res.data;
       final code = res.statusCode ?? 0;
 

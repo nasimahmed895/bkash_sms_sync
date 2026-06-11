@@ -8,7 +8,7 @@ import '../../domain/entities/payment.dart';
 /// even across isolates (UI isolate, SMS background isolate, WorkManager).
 class PaymentDb {
   static const _dbName = 'bkash_payments.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
   static const table = 'payments';
 
   Database? _db;
@@ -27,6 +27,7 @@ class PaymentDb {
         await db.execute('''
           CREATE TABLE $table (
             localId INTEGER PRIMARY KEY AUTOINCREMENT,
+            provider TEXT NOT NULL DEFAULT 'bkash',
             phone TEXT NOT NULL,
             amount REAL NOT NULL,
             balance REAL NOT NULL,
@@ -42,10 +43,17 @@ class PaymentDb {
         await db.execute(
             'CREATE INDEX idx_sync_status ON $table (syncStatus)');
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+              "ALTER TABLE $table ADD COLUMN provider TEXT NOT NULL DEFAULT 'bkash'");
+        }
+      },
     );
   }
 
   Map<String, dynamic> _toRow(Payment pmt) => {
+        'provider': pmt.provider,
         'phone': pmt.phone,
         'amount': pmt.amount,
         'balance': pmt.balance,
@@ -60,6 +68,7 @@ class PaymentDb {
 
   Payment _fromRow(Map<String, dynamic> r) => Payment(
         localId: r['localId'] as int,
+        provider: (r['provider'] as String?) ?? 'bkash',
         phone: r['phone'] as String,
         amount: (r['amount'] as num).toDouble(),
         balance: (r['balance'] as num).toDouble(),

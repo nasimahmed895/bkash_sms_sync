@@ -15,9 +15,11 @@ extension SyncStatusX on SyncStatus {
       };
 }
 
-/// A bKash payment captured from SMS, queued for webhook delivery.
+/// A mobile-banking payment (bKash / Nagad) captured from SMS, queued
+/// for webhook delivery.
 class Payment {
   final int? localId;
+  final String provider; // 'bkash' | 'nagad'
   final String phone;
   final double amount;
   final double balance;
@@ -31,6 +33,7 @@ class Payment {
 
   const Payment({
     this.localId,
+    this.provider = 'bkash',
     required this.phone,
     required this.amount,
     required this.balance,
@@ -52,6 +55,7 @@ class Payment {
   }) =>
       Payment(
         localId: localId ?? this.localId,
+        provider: provider,
         phone: phone,
         amount: amount,
         balance: balance,
@@ -65,6 +69,7 @@ class Payment {
       );
 
   Map<String, dynamic> toWebhookJson() => {
+        'provider': provider,
         'number': phone,
         'amount': amount,
         'balance': balance,

@@ -40,7 +40,7 @@ class NotificationCaptureService {
   }
 
   Future<void> _onNotification(String text) async {
-    final parsed = BkashSmsParser.parseNotification(text);
+    final parsed = PaymentSmsParser.parseNotification(text);
     if (parsed == null) return;
     await handleParsedPayment(parsed);
   }

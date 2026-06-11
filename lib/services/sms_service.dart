@@ -10,10 +10,11 @@ import 'sync_engine.dart';
 
 /// Shared pipeline: persist → sync → schedule retry.
 /// Called by SMS path, notification path, and WorkManager.
-Future<void> handleParsedPayment(ParsedBkashPayment parsed) async {
+Future<void> handleParsedPayment(ParsedPayment parsed) async {
   await setupServiceLocator();
 
   final payment = Payment(
+    provider: parsed.provider,
     phone: parsed.number,
     amount: parsed.amount,
     balance: parsed.balance,
@@ -38,13 +39,14 @@ Future<void> handleIncomingSms(SmsMessage message) async {
   final body = message.body;
   if (body == null) return;
 
-  final parsed = BkashSmsParser.parse(body);
+  final parsed = PaymentSmsParser.parse(body);
   if (parsed == null) return;
 
-  if (!BkashSmsParser.isKnownBkashSender(message.address)) {
+  if (!PaymentSmsParser.isKnownSender(parsed.provider, message.address)) {
     appLogger.w(
-        'bKash-pattern SMS from unverified sender "${message.address}" — '
-        'stored anyway; tighten AppConstants.bkashSenderIds to reject.');
+        '${parsed.provider}-pattern SMS from unverified sender '
+        '"${message.address}" — stored anyway; tighten sender ID lists '
+        'in AppConstants to reject.');
   }
 
   await handleParsedPayment(parsed);

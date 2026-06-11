@@ -53,20 +53,38 @@ class ApiClient {
     try {
       final res = await _dio.post(AppConstants.webhookPath, data: body);
       final data = res.data;
+      final code = res.statusCode ?? 0;
 
       if (data is Map<String, dynamic>) {
         final status = data['status'];
-        if (status == 'success') {
-          final id = data['data']?['id'];
-          if (id is int) return WebhookSuccess(id);
-          if (id is String) {
-            final parsed = int.tryParse(id);
-            if (parsed != null) return WebhookSuccess(parsed);
-          }
+
+        int? extractId() {
+          final id = data['data']?['subscription_id'] ?? data['data']?['id'];
+          if (id is int) return id;
+          if (id is String) return int.tryParse(id);
+          return null;
+        }
+
+        // Backend uses boolean status: {status: true/false, data: {...}}
+        if (status == true || status == 'success') {
+          final id = extractId();
+          if (id != null) return WebhookSuccess(id);
           return const WebhookTransientError('success without backend id');
         }
-        if (status == 'failed') {
-          // Definitive business failure from backend — stop retrying.
+
+        // 409 = trxID already processed — payment IS delivered, stop retrying.
+        if (code == 409) {
+          final id = extractId();
+          if (id != null) return WebhookSuccess(id);
+          return WebhookRejected(
+              (data['message'] as String?) ?? 'already processed');
+        }
+
+        // Other definitive business failures (404 no match, 422 invalid) —
+        // backend has logged the payment and owns reconciliation.
+        if ((status == false || status == 'failed') &&
+            code >= 400 &&
+            code < 500) {
           return WebhookRejected(
               (data['message'] as String?) ?? 'payment rejected');
         }

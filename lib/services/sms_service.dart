@@ -46,8 +46,8 @@ Future<void> handleIncomingSms(SmsMessage message) async {
   if (!PaymentSmsParser.isKnownSender(parsed.provider, message.address)) {
     appLogger.w(
         '${parsed.provider}-pattern SMS from unverified sender '
-        '"${message.address}" — stored anyway; tighten sender ID lists '
-        'in AppConstants to reject.');
+        '"${message.address}" — rejected.');
+    return;
   }
 
   await handleParsedPayment(parsed);

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'presentation/screens/dashboard_screen.dart';
 import 'presentation/screens/payment_list_screen.dart';
 import 'services/background_tasks.dart';
+import 'services/battery_optimization_service.dart';
 import 'services/connectivity_service.dart';
 import 'services/notification_capture_service.dart';
 import 'services/service_locator.dart';
@@ -57,11 +58,25 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   }
 
   Future<void> _bootstrap() async {
-    final smsOk = await SmsService().start();
+    // 1. Request battery-optimization exemption so background isolates can
+    //    access the network even when the device is in Doze mode.
+    //    Without this, backgroundSmsHandler stores the payment but the
+    //    HTTP sync silently fails and stays pending_sync forever on devices
+    //    with aggressive battery saving (Samsung, Xiaomi, Huawei, etc.).
+    await BatteryOptimizationService.requestExemption();
+
+    // 2. Start SMS + notification listeners.
+    final smsService = SmsService();
+    final smsOk = await smsService.start();
     final notifOk = await _notifService.isAccessGranted();
     if (notifOk) _notifService.start();
     if (mounted) setState(() { _smsReady = smsOk; _notifReady = notifOk; });
     _connectivity.start();
+
+    // 3. Recover any payments missed while the app was force-stopped or while
+    //    the background isolate was killed (Doze / "Unused apps" restriction).
+    //    Duplicate trxIDs are silently skipped — safe to run every launch.
+    if (smsOk) await smsService.scanInbox(daysBack: 7);
   }
 
   @override

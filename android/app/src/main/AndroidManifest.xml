@@ -14,6 +14,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Battery optimization exemption — keeps background SMS handler and
+         WorkManager alive in Doze mode and on restricted-bucket devices.
+         Without this, HTTP calls from background isolates fail silently. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!-- Exact alarms — improves WorkManager retry reliability on Android 12+ -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+
     <!-- For call action on payment list -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
 

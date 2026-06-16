@@ -35,7 +35,8 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<List<PaymentListItem>> fetchPaymentList({int page = 1}) async {
     final res = await _api.getPaymentList(page: page);
     final data = res.data;
-    if (data is Map<String, dynamic> && data['status'] == 'success') {
+    if (data is Map<String, dynamic> &&
+        (data['status'] == true || data['status'] == 'success')) {
       final list = data['data'] as List<dynamic>? ?? [];
       return list
           .map((e) => PaymentListItem.fromJson(e as Map<String, dynamic>))

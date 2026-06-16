@@ -7,7 +7,7 @@ class AppConstants {
       defaultValue: 'https://hisabeasy.online');
   static const String webhookSecret = String.fromEnvironment(
     'WEBHOOK_SECRET',
-    defaultValue: '8t(O3Umbt9@157Hyob5Zy&DEz^qog*R+',
+    defaultValue: '',
   );
 
   /// Unified payment webhook (handles bKash + Nagad, SMS package +

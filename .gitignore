@@ -54,3 +54,8 @@
 # --------------------------------------------------
 # .env
 # .env.*
+
+# Android signing — never commit the real keystore or properties
+/android/key.properties
+*.jks
+*.keystore

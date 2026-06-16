@@ -3,7 +3,12 @@ class AppConstants {
   AppConstants._();
 
   // ---- API ----
-  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.hisabeasy.com');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL',
+      defaultValue: 'https://hisabeasy.online');
+  static const String webhookSecret = String.fromEnvironment(
+    'WEBHOOK_SECRET',
+    defaultValue: '8t(O3Umbt9@157Hyob5Zy&DEz^qog*R+',
+  );
 
   /// Unified payment webhook (handles bKash + Nagad, SMS package +
   /// subscription). Full URL = baseUrl + webhookPath.
@@ -16,18 +21,38 @@ class AppConstants {
   // ---- Payment SMS detection ----
   /// Known bKash sender IDs. SMS from other senders is still parsed but
   /// flagged; tighten this list as needed.
-  static const List<String> bkashSenderIds = ['bKash', 'BKASH', 'bkash', '16247'];
+  static const List<String> bkashSenderIds = [
+    'bKash',
+    'BKASH',
+    'bkash',
+    '16247'
+  ];
 
   /// Known Nagad sender IDs.
-  static const List<String> nagadSenderIds = ['NAGAD', 'Nagad', 'nagad', '16167'];
+  static const List<String> nagadSenderIds = [
+    'NAGAD',
+    'Nagad',
+    'nagad',
+    '16167'
+  ];
 
   /// All of these substrings must be present for an SMS to be considered
   /// a bKash received-payment message.
-  static const List<String> bkashKeywords = ['received', 'Tk', 'Balance', 'TrxID'];
+  static const List<String> bkashKeywords = [
+    'received',
+    'Tk',
+    'Balance',
+    'TrxID'
+  ];
 
   /// All of these substrings must be present for an SMS to be considered
   /// a Nagad received-payment message.
-  static const List<String> nagadKeywords = ['Money Received', 'Amount', 'TxnID', 'Balance'];
+  static const List<String> nagadKeywords = [
+    'Money Received',
+    'Amount',
+    'TxnID',
+    'Balance'
+  ];
 
   // ---- Retry schedule (index = retryCount) ----
   /// 30s, 1m, 5m, 15m, 30m, 1h, then every 6h forever.

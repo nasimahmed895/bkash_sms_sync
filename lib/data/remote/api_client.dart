@@ -56,7 +56,7 @@ class ApiClient {
   Future<WebhookResult> submitPayment(Map<String, dynamic> body) async {
     try {
       final bodyJson = jsonEncode(body);
-      final secret = const String.fromEnvironment('WEBHOOK_SECRET');
+      final secret = AppConstants.webhookSecret;
       final options = Options();
       if (secret.isNotEmpty) {
         final sig = Hmac(sha256, utf8.encode(secret))
@@ -115,9 +115,19 @@ class ApiClient {
 
   /// GET /api/payment-list
   Future<Response> getPaymentList({int page = 1}) {
+    final secret = AppConstants.webhookSecret;
+    final options = Options();
+    if (secret.isNotEmpty) {
+      // Empty-body HMAC so backend can verify the sync app identity.
+      final sig = Hmac(sha256, utf8.encode(secret))
+          .convert(utf8.encode(''))
+          .toString();
+      options.headers = {'X-Webhook-Signature': sig};
+    }
     return _dio.get(
       AppConstants.paymentListPath,
       queryParameters: {'page': page},
+      options: options,
     );
   }
 }

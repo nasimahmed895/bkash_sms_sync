@@ -52,6 +52,14 @@ class ApiClient {
     ));
   }
 
+  Map<String, String> _signedHeaders(String secret, String payload) {
+    final ts = (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
+    final sig = Hmac(sha256, utf8.encode(secret))
+        .convert(utf8.encode('$ts.$payload'))
+        .toString();
+    return {'X-Webhook-Timestamp': ts, 'X-Webhook-Signature': sig};
+  }
+
   /// POST /webhook/verification-payment
   Future<WebhookResult> submitPayment(Map<String, dynamic> body) async {
     try {
@@ -59,10 +67,7 @@ class ApiClient {
       final secret = AppConstants.webhookSecret;
       final options = Options();
       if (secret.isNotEmpty) {
-        final sig = Hmac(sha256, utf8.encode(secret))
-            .convert(utf8.encode(bodyJson))
-            .toString();
-        options.headers = {'X-Webhook-Signature': sig};
+        options.headers = _signedHeaders(secret, bodyJson);
       }
       final res = await _dio.post(AppConstants.webhookPath, data: bodyJson, options: options);
       final data = res.data;
@@ -118,11 +123,9 @@ class ApiClient {
     final secret = AppConstants.webhookSecret;
     final options = Options();
     if (secret.isNotEmpty) {
-      // Empty-body HMAC so backend can verify the sync app identity.
-      final sig = Hmac(sha256, utf8.encode(secret))
-          .convert(utf8.encode(''))
-          .toString();
-      options.headers = {'X-Webhook-Signature': sig};
+      // Backend signs over getRequestUri() = path + query string.
+      final uri = '${AppConstants.paymentListPath}?page=$page';
+      options.headers = _signedHeaders(secret, uri);
     }
     return _dio.get(
       AppConstants.paymentListPath,

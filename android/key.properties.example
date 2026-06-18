@@ -1,4 +1,4 @@
-storePassword=<keystore-password>
-keyPassword=<key-password>
-keyAlias=<key-alias>
-storeFile=<path-to-keystore.jks>
+storePassword=HisabEasy@2026
+keyPassword=HisabEasy@2026
+keyAlias=hisabeasy
+storeFile=storeFile=../hisabeasy-release.jks

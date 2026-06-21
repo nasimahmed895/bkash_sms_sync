@@ -32,6 +32,9 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<void> bumpRetry(int localId) => _db.bumpRetry(localId);
 
   @override
+  Future<void> retryFailed() => _db.retryFailed();
+
+  @override
   Future<List<PaymentListItem>> fetchPaymentList({int page = 1}) async {
     final res = await _api.getPaymentList(page: page);
     final data = res.data;

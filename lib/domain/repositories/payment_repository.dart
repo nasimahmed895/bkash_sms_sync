@@ -12,6 +12,7 @@ abstract class PaymentRepository {
   Future<void> markSynced(int localId, int backendId);
   Future<void> markFailed(int localId);
   Future<void> bumpRetry(int localId);
+  Future<void> retryFailed();
 
   /// Fetches the remote payment list (Payment List screen).
   Future<List<PaymentListItem>> fetchPaymentList({int page = 1});

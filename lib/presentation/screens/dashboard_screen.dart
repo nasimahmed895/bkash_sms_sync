@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../services/service_locator.dart';
+import '../../services/sync_engine.dart';
 import '../providers/providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -15,7 +17,10 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
       body: RefreshIndicator(
-        onRefresh: () => ref.refresh(statsProvider.future),
+        onRefresh: () async {
+          await sl<SyncEngine>().syncAll();
+          return ref.refresh(statsProvider.future);
+        },
         child: stats.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ListView(children: [

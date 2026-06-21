@@ -19,6 +19,14 @@ class SyncEngine {
 
   SyncEngine(this._repo, this._api);
 
+  /// Resets failed payments to pending, then syncs everything.
+  /// Use on manual pull-to-refresh so previously-rejected payments get
+  /// one more chance (e.g. a 409-without-id that was wrongly marked failed).
+  Future<bool> syncAll() async {
+    await _repo.retryFailed();
+    return syncPending();
+  }
+
   /// Syncs all pending payments. Returns true if nothing is left pending
   /// (i.e. no further retry needs to be scheduled).
   Future<bool> syncPending() async {

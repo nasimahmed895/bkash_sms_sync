@@ -72,12 +72,10 @@ class ApiClient {
           return const WebhookTransientError('success without backend id');
         }
 
-        // 409 = trxID already processed — payment IS delivered, stop retrying.
+        // 409 = trxID already processed — payment IS on backend, stop retrying.
+        // Use id=0 sentinel if backend omits it; payment is still delivered.
         if (code == 409) {
-          final id = extractId();
-          if (id != null) return WebhookSuccess(id);
-          return WebhookRejected(
-              (data['message'] as String?) ?? 'already processed');
+          return WebhookSuccess(extractId() ?? 0);
         }
 
         // Other definitive business failures (404 no match, 422 invalid) —

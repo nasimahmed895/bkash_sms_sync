@@ -143,6 +143,17 @@ class PaymentDb {
     );
   }
 
+  /// Resets all `failed` records back to `pending_sync` so they are retried.
+  Future<void> retryFailed() async {
+    final db = await database;
+    await db.update(
+      table,
+      {'syncStatus': 'pending_sync'},
+      where: 'syncStatus = ?',
+      whereArgs: ['failed'],
+    );
+  }
+
   Future<PaymentStats> stats() async {
     final db = await database;
     final rows = await db.rawQuery('''
